@@ -1,0 +1,38 @@
+body {
+    font: 11pt Arial Helvetica sans-serif;
+    margin:  0;
+}
+h1 {
+    font-size: 22pt;
+    margin: 0;
+    color: #D3E2F0;
+}
+h2 {
+    margin-top: 0;
+    color: #828282;
+}
+#header {
+    background: white;
+    padding:  10px;
+}
+#sidebar {
+    float: left;
+    width: 20%;
+    border: 1px solid #EAECEA;
+    padding: 5px;
+    margin:  10px 10px 20px 5px;
+}
+#content {
+    margin: 10px 5px 20px 25%;
+    padding: 5px;
+    border: 1px solid #EAECEA;
+}
+#footer {
+    background: white;
+    color: #D3E2F0;
+    padding: 5px;
+    clear: left;
+}
+.text {
+    color: #D3E2F0;
+}
