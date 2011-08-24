@@ -1,15 +1,15 @@
 body {
-    font: 11pt Arial Helvetica sans-serif;
+    /*font: 11pt Arial Helvetica sans-serif;*/
     margin:  0;
 }
 h1 {
     font-size: 22pt;
     margin: 0;
-    color: #D3E2F0;
+    color: #97aec3;
 }
 h2 {
     margin-top: 0;
-    color: #828282;
+    color: #474242;
 }
 #header {
     background: white;
@@ -17,22 +17,51 @@ h2 {
 }
 #sidebar {
     float: left;
-    width: 20%;
-    border: 1px solid #EAECEA;
-    padding: 5px;
-    margin:  10px 10px 20px 5px;
+    width: 15%;
+    /*border: 1px solid #dde0dd;*/
+    padding: 10px;
+    margin:  10px 10px 20px 10px;
 }
 #content {
-    margin: 10px 5px 20px 25%;
+    margin: 10px 10px 20px 25%;
     padding: 5px;
-    border: 1px solid #EAECEA;
+    /*border: 1px solid #dde0dd;*/
+    width: 60%;
 }
 #footer {
     background: white;
-    color: #D3E2F0;
+    color: #97aec3;
     padding: 5px;
     clear: left;
 }
 .text {
-    color: #D3E2F0;
+    color: #97aec3;
+    font-family: 12pt monospace;
+    font-style: normal;
+}
+a[type="dir"] {
+    /*background: url(pics/image_dir.gif) no-repeat 0 1px;*/
+}
+
+a {
+    text-decoration: none;
+    text-shadow: aqua;
+}
+
+a:visited {
+    color: #75aec3;
+}
+
+a:hover {
+    color: #45c42c;
+}
+
+a:active {
+    color: #97aec1;
+}
+
+.textItalicChooseFolder {
+    font-family: cursive;
+    color: #d6d3d3;
+    font-size: 10pt;
 }
