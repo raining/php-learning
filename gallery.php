@@ -9,19 +9,36 @@ if (isset($_GET['create'])) {
 }
 
 if (isset($_GET['gallery_dir'])) {
-    $gallery_dir=$_GET['gallery_dir'];
+    $gallery_dir = $_GET['gallery_dir'];
     create_gallery($gallery_dir);
 }
 
 if (isset($_GET['hidden'])) {
     $hidden = $_GET['hidden'];
 }
-function create_gallery($gallery_dir="tmpdir") {
-        $fullpath=$_GET['hidden'].$gallery_dir."/";
-        echo $fullpath;
+
+if (isset($_POST['g'])) {
+    $dirAfterUpload = $_POST['g'];
+}
+
+if (isset($_REQUEST['imageUploader'])) {
+    echo "$_FILES = " . print_r($_FILES, true) . "<br>";
+    echo "$_POST = " . print_r($_POST, true) . "<br>";
+}
+
+function create_gallery($gallery_dir = "tmpdir")
+{
+    $fullpath = $_GET['hidden'] . $gallery_dir . "/";
+    echo $fullpath;
 
     mkdir($fullpath, 0770);
+
+    if (isset($_FILES['myFile'])) {
+       $dirAfterUpload = $_POST['g'];
+        copy($_FILES['myFile']['tmp_name'], "$dirAfterUpload");
+    }
 }
+
 function print_tree($path = "./*")
 {
     foreach (glob($path) as $file) {
@@ -78,30 +95,38 @@ function print_images($dir = "/images/*")
         <?php print_images($dir); ?>
     </table>
     <?php
+
 }
-    if (isset($gallery_dir)) { ?>
-        <div class='text'>Ваша папка с фотографиями успешно создана. Пришло время добавить немного картинок! </div><br>
+    if (isset($gallery_dir)) {
+        ?>
+        <div class='text'>Ваша папка с фотографиями успешно создана. Пришло время добавить немного картинок!</div>
         <p>
-        <form action="gallery.php " name="createGallery" method="get" enctype="multipart/form-data">
-            <input type="file" multiple accept="image/*, image/jpeg" name="imageUploader">
+        <form action="gallery.php" method="post" enctype="multipart/form-data">
+            <input type="file" multiple accept="image/*, image/jpeg" name="myFile">
+            <input type="hidden" value="<?php print $gallery_dir; ?>" name="g">
             <p>
-                <input type="image" src="images/sendbutton.png">
-                <input type="submit" value="Отправить">
+                <input type="submit" name="imageUploader" value="Отправить на сервер">
             </p>
         </form>
-            <a href="gallery.php?dir=<?php print $hidden . $gallery_dir; ?>">Просмотреть свою папку с картинками.</a>
-    <?php }
+        <!--            <a href="gallery.php?dir=-->
+            <?php //print $hidden . $gallery_dir; ?><!--">Просмотреть свою папку с картинками.</a>-->
+        </p>
+        <?php
+    }
 
-    if (isset($create) && $create == 1) { ?>
+    if (isset($create) && $create == 1) {
+        ?>
         <form action="gallery.php" method="get" name="formChooseDir">
-            <div class="text">Введите имя папки: </div><input type="text" name="gallery_dir" value="">
+            <div class="text">Введите имя папки:</div>
+            <input type="text" name="gallery_dir" value="">
             <input type="hidden" value="<?php print $dir; ?>" name="hidden">
             <input type="submit" value="Отправить">
         </form>
-<!--
-    <?php }
 
-   ?>
+        <?php
+    }
+
+    ?>
 </div>
 <div id="footer">&copy;<a href="mailto:rainxforum@gmail.com">Ekaterina Khurtina</a></div>
 </body>
