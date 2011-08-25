@@ -1,3 +1,4 @@
+<script type="text/javascript" src="imagesize.js"></script>
 <?php
 
 if (isset($_GET['dir'])) {
@@ -19,6 +20,11 @@ if (isset($_GET['hidden'])) {
 
 if (isset($_POST['g'])) {
     $dirAfterUpload = $_POST['g'];
+}
+
+if (isset($_GET['go'])) {
+    $go = $_GET['go'];
+    print "<a href='gallery.php'>На главную</a>";
 }
 
 if (isset($_REQUEST['imageUploader'])) {
@@ -65,7 +71,8 @@ function print_images($dir = "/images/*")
             print "<td>";
             if ($k < $count_images) {
                 $image = rawurldecode($images[$k]);
-                print "<a href='$image'><img src='$image' height='200' width='200'></a>";
+//                print "<a href='$image'><img src='$image' height='200' width='200'></a>";
+                print "<img class='expando' border='0' src='$image' width='200' height='200'>";
             }
             print "</td>";
         }
