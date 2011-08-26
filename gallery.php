@@ -1,22 +1,21 @@
 <?php
 
 $error_messages["empty_dir"] = "В галерее нет изображений.";
-$error_messages["wrong_dir"] = "Запрашиваемого каталога не существует!";
+$error_messages["not_exist_dir"] = "Запрашиваемого каталога не существует!";
 $error_messages["wrong_file_extension"] = "Неподдерживаемый тип закачиваемого файла!";
-$error_messages["wrong_perm"] = "Отсутствует доступ к запрашиваемой галерее. Возможно, кто-то не хочет, чтобы ее обнаружили.";
+$error_messages["wrong_perm"] = "Отсутствует доступ к запрашиваемой галерее.";
 $error_messages["exist_dir"] = "Каталог уже существует!";
 
+$server_dir = $_SERVER['DOCUMENT_ROOT'];
+
 if (isset($_GET['dir'])) {
+    print realpath($_GET['dir']);
     if (!file_exists($_GET['dir'])) {
-        //$error_messages["wrong_dir"];
+        //$error_messages["not_exist_dir"];
         $dir = "./";
     } else {
         $dir = $_GET['dir'];
     }
-    if ($dir == "../") {
-        //$error_messages["wrong_perm"];
-        $dir = "./";
-    } 
 }
 
 if (isset($_GET['image'])) {}
@@ -32,13 +31,6 @@ if (isset($_GET['gallery_dir'])) {
     create_gallery($gallery_dir);
 }
 
-
-if (isset($_GET['go'])) {
-    if ($_GET['go'] != 1) {
-        $_GET['go'] = 1;
-    }
-    $go = $_GET['go'];
-}
 
 if (isset($_REQUEST['imageUploader'])) {
     echo "$_FILES = " . print_r($_FILES, true) . "<br>";
@@ -61,7 +53,8 @@ function print_tree($path = "./*")
     foreach (glob($path) as $file) {
         if (is_dir($file)) {
             $basename = basename($file);
-            print "<p><a href='?dir=$file/' type='dir'>$basename</a></p>";
+            $real = realpath($file);
+            print "<p><a href='?dir=$file/' type='dir'>$basename | realpath=$real</a></p>";
             //            print_tree($path = $file . "/*");
         }
     }
@@ -98,14 +91,14 @@ function print_images($dir = "/images/*")
     <link rel="stylesheet" type="text/css" href="gallery.css">
 </head>
 <body>
-<div align="center" id="header"><img src="images/gallery.gif" alt="Галерея" align="middle"></div>
+<div align="center" id="header"><a href="gallery.php"><img src="images/gallery.gif" alt="Галерея" align="middle"></a></div>
 <div id="sidebar">
     <div class="text">
 <?php
 
     if (isset($dir) && $dir != "./") {
             $parent = dirname($dir);
-            print "<a class='home' href='gallery.php?dir=$parent/&go=1'>Назад</a><br>";
+            print "<a class='home' href='gallery.php?dir=$parent/'>Назад</a><br>";
         print_tree($dir . "*");
     } else {
         print_tree("./*");

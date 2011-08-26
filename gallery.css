@@ -69,3 +69,9 @@ a:active {
 a.home {
     color: #45c42c;
 }
+
+#error {
+    color: #dc143c;
+    font-family: monospace;
+    font-size: medium;
+}
