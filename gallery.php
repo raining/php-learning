@@ -1,12 +1,12 @@
 <?php
 
 //massiv of possible errors
-$error_messages["empty_dir"] = "В галерее нет изображений.";        //1
-$error_messages["wrong_file_extension"] = "Неподдерживаемый тип закачиваемого файла!";   //3
-$error_messages["exist_dir"] = "Каталог уже существует!";                            //5
+$error_messages["empty_dir"] = "В галерее нет изображений."; //1
+$error_messages["wrong_file_extension"] = "Неподдерживаемый тип закачиваемого файла!"; //3
+$error_messages["exist_dir"] = "Каталог уже существует!"; //5
 //todo: comlete massiv of possible errors (f.e. 10+ elements)
 
-$server_dir = substr($_SERVER['DOCUMENT_ROOT'], 0, 13);//if document_root=/var/www/html  (not flexible!)
+$server_dir = substr($_SERVER['DOCUMENT_ROOT'], 0, 13); //if document_root=/var/www/html  (not flexible!)
 //todo: for any DOCUMENT_ROOT directory
 
 if (isset($_GET['error'])) {
@@ -35,6 +35,10 @@ if (isset($_GET['dir'])) {
         $dir = $_GET['dir'];
     }
 }
+else {
+    $dir = "./";
+    $is_dir_defined = 0;
+}
 
 function create_gallery($gallery_dir = "tmpdir")
 {
@@ -53,8 +57,7 @@ function print_tree($path = "./*")
     foreach (glob($path) as $file) {
         if (is_dir($file)) {
             $basename = basename($file);
-            print "<p>
-            <a href='?dir=$file/' type='dir'>$basename</a></p>";
+            print "<p><a href='?dir=$file/' type='dir'>$basename</a></p>";
         }
     }
 }
@@ -63,6 +66,7 @@ function print_images($dir = "/images/*")
 {
     $images = glob(realpath($dir) . "/*.{jpg,png,jpeg,gif}", GLOB_BRACE);
     $count_images = count($images);
+    print "count_images = $count_images";
     if ($count_images == 0) {
         ;
     }
@@ -83,28 +87,32 @@ function print_images($dir = "/images/*")
 
 function generate_error($error_code = 1)
 {
-    switch($error_code) {
-        case'1' : {
+    switch ($error_code) {
+        case'1' :
+            {
             print "Запрашиваемой галереи не существует или отсутствует доступ к указанной галерее.";
             break;
-        }
-        case '2' : {
-            print "В галерее нет изображений.";
-            break;
-        }
-        case '3': {
-
-        }
-        case '4': {
-
-        }
-        case '5': {
+            }
+        case '2' :
+            {
+            }
+        case '3':
+            {
 
             }
-        default: {
+        case '4':
+            {
+
+            }
+        case '5':
+            {
+
+            }
+        default:
+            {
             print "Неизвестный тип ошибки";
             break;
-        }
+            }
     }
 }
 
@@ -134,19 +142,20 @@ function generate_error($error_code = 1)
 </div>
 <div id="content">
 <?php
-    if ($error > 0) {?>
-        <div id=error><?php generate_error($error);?></div><?
-    }
-    print_images("./*");
-    if (isset($dir)) {
-        ?>
-        <table cellspacing="5">
-            <?php print_images($dir); ?>
-        </table>
-        <?php
+    if ($error > 0) {
+    ?>
+        <div id=error><?php generate_error($error); ?></div>
+    <?php
 
     }
     ?>
+    <table cellspacing="5">
+        <?php
+        if ($is_dir_defined == 0) {
+            print "<div id='welcome-message'>Добро пожаловать в галерею! Здесь можно просмотреть изображения, добавить свои галереи и делиться ими в соцсетях!</div>";
+        }
+        print_images($dir); ?>
+    </table>
 </div>
 <div id="footer">&copy; <a href="mailto:rainxforum@gmail.com">Ekaterina Khurtina</a></div>
 </body>
