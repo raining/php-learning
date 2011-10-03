@@ -1,17 +1,17 @@
 <?php
 
-$error_messages["empty_dir"] = "В галерее нет изображений.";
-$error_messages["not_exist_dir"] = "Запрашиваемой галереи не существует!";
-$error_messages["wrong_file_extension"] = "Неподдерживаемый тип закачиваемого файла!";
-$error_messages["wrong_perm"] = "Отсутствует доступ к запрашиваемой галерее.";
-$error_messages["exist_dir"] = "Каталог уже существует!";
+//massiv of possible errors
+$error_messages["empty_dir"] = "В галерее нет изображений.";        //1
+$error_messages["wrong_file_extension"] = "Неподдерживаемый тип закачиваемого файла!";   //3
+$error_messages["exist_dir"] = "Каталог уже существует!";                            //5
+//todo: comlete massiv of possible errors (f.e. 10+ elements)
 
-$server_dir = substr($_SERVER['DOCUMENT_ROOT'], 0, 13);
-//print "server_dir = $server_dir<br>";
+$server_dir = substr($_SERVER['DOCUMENT_ROOT'], 0, 13);//if document_root=/var/www/html  (not flexible!)
+//todo: for any DOCUMENT_ROOT directory
 
 if (isset($_GET['error'])) {
     $error = 0;
-    for ($i = 1; $i < 101; $i++) {
+    for ($i = 1; $i < 6; $i++) { //for 5 types of errors yet
         if (strnatcasecmp($_GET['error'], "$i") == 0) {
             $error = $_GET['error'];
             break;
@@ -21,16 +21,16 @@ if (isset($_GET['error'])) {
         unset($_GET['error']);
     }
 }
-if (isset($_GET['dir'])) {
-    //    print "realpath = " . realpath($_GET['dir']) . "<br>";
-    //    print "substr = " . substr(realpath($_GET['dir']), 0, 13) . "<br>";
 
-    if (strnatcasecmp(substr(realpath($_GET['dir']), 0, 13), $server_dir) != 0) { //не равны
-        //        print $error_messages['not_exist_dir'] ." или " . $error_messages['wrong_perm'];
+if (isset($_GET['dir'])) {
+
+    // if it's out of range of document_root dir, f.e. /var,/var/www, /home,./../../../ etc
+    if (strnatcasecmp(substr(realpath($_GET['dir']), 0, 13), $server_dir) != 0) {
         $dir = "./";
         Header("Location: gallery.php?error=1");
-        exit();
+        exit;
     }
+    //if this is a range of document_root dir,so it's ok
     if (strnatcasecmp(substr(realpath($_GET['dir']), 0, 13), $server_dir) == 0) {
         $dir = $_GET['dir'];
     }
@@ -38,6 +38,7 @@ if (isset($_GET['dir'])) {
 
 function create_gallery($gallery_dir = "tmpdir")
 {
+    //todo: fix
     if (isset($_GET['hidden'])) {
         $hidden = $_GET['hidden'];
         $fullpath = "$hidden . $gallery_dir . /";
@@ -52,7 +53,8 @@ function print_tree($path = "./*")
     foreach (glob($path) as $file) {
         if (is_dir($file)) {
             $basename = basename($file);
-            print "<p><a href='?dir=$file/' type='dir'>$basename</a></p>";
+            print "<p>
+            <a href='?dir=$file/' type='dir'>$basename</a></p>";
         }
     }
 }
@@ -79,9 +81,31 @@ function print_images($dir = "/images/*")
     }
 }
 
-function generate_error($string = "error")
+function generate_error($error_code = 1)
 {
-    print $string != "" ? "<p><div id='error'>$string</div></p>" : "";
+    switch($error_code) {
+        case'1' : {
+            print "Запрашиваемой галереи не существует или отсутствует доступ к указанной галерее.";
+            break;
+        }
+        case '2' : {
+            print "В галерее нет изображений.";
+            break;
+        }
+        case '3': {
+
+        }
+        case '4': {
+
+        }
+        case '5': {
+
+            }
+        default: {
+            print "Неизвестный тип ошибки";
+            break;
+        }
+    }
 }
 
 ?>
@@ -110,10 +134,8 @@ function generate_error($string = "error")
 </div>
 <div id="content">
 <?php
-    if (strnatcasecmp($error, 1) == 0) {
-        generate_error($error_messages['not_exist_dir'] . " или " . $error_messages['wrong_perm']);
-    } else {
-        generate_error($error);
+    if ($error > 0) {?>
+        <div id=error><?php generate_error($error);?></div><?
     }
     print_images("./*");
     if (isset($dir)) {
