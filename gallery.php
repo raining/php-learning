@@ -1,122 +1,82 @@
 <?php
+require_once "lib.php";
 
-//massiv of possible errors
-$error_messages["empty_dir"] = "В галерее нет изображений."; //1
-$error_messages["wrong_file_extension"] = "Неподдерживаемый тип закачиваемого файла!"; //3
-$error_messages["exist_dir"] = "Каталог уже существует!"; //5
-//todo: comlete massiv of possible errors (f.e. 10+ elements)
+$gallery_root = remove_last_slash_from_path($_SERVER['DOCUMENT_ROOT']);
+$col_len = 4;
 
-$server_dir = substr($_SERVER['DOCUMENT_ROOT'], 0, 13); //if document_root=/var/www/html  (not flexible!)
-//todo: for any DOCUMENT_ROOT directory
-
-if (isset($_GET['error'])) {
-    $error = 0;
-    for ($i = 1; $i < 6; $i++) { //for 5 types of errors yet
-        if (strnatcasecmp($_GET['error'], "$i") == 0) {
-            $error = $_GET['error'];
-            break;
-        }
-    }
-    if ($error == 0) {
-        unset($_GET['error']);
-    }
+//full path to gallery w.o. / ([server_dir] ?= [server_dir]/some/path)
+function is_valid_dir($root_dir, $dir)
+{
+    $base_dir = substr($dir, 0, strlen($root_dir));
+    return strnatcasecmp($root_dir, $base_dir) == 0;
 }
 
-if (isset($_GET['dir'])) {
+//full path to gallery w.o. /  (user_dir ?= server_dir)
+function is_root_dir($root_dir, $dir)
+{
+    return strnatcasecmp($root_dir, $dir) == 0;
+}
 
-    // if it's out of range of document_root dir, f.e. /var,/var/www, /home,./../../../ etc
-    if (strnatcasecmp(substr(realpath($_GET['dir']), 0, 13), $server_dir) != 0) {
-        $dir = "./";
-        Header("Location: gallery.php?error=1");
-        exit;
+//full path to gallery w.o. /
+function create_navigation($path)
+{
+    $dirs = glob("$path/*", GLOB_ONLYDIR);
+
+    $items = array();
+
+    foreach ($dirs as $dir_name) {
+        $items[basename($dir_name)] = realpath($dir_name);
     }
-    //if this is a range of document_root dir,so it's ok
-    if (strnatcasecmp(substr(realpath($_GET['dir']), 0, 13), $server_dir) == 0) {
-        $dir = $_GET['dir'];
+
+    return $items;
+}
+
+//full path to gallery w.o. /
+function create_images_list($path)
+{
+    return glob("$path/*.{jpg,JPG,png,jpeg,gif}", GLOB_BRACE);
+}
+
+//variables of possible errors
+$empty_dir = "В галерее нет изображений.";
+$wrong_file_extension = "Неподдерживаемый тип закачиваемого файла!";
+$exist_dir = "Каталог уже существует!";
+$not_exist_dir = "Запрашиваемой галереи не существует или отсутствует доступ к указанной галерее.";
+$unknown_error = "Неизвестный тип ошибки.";
+
+if (isset($_GET['gallery'])) {
+    $gallery_path = remove_last_slash_from_path($_GET['gallery']); // f.e. /my_gallery/family
+    $real_gallery_path = realpath($gallery_root . $gallery_path); // /var/www/html/my_gallery
+
+    if (!is_valid_dir($gallery_root, $real_gallery_path)) {
+        $real_gallery_path = $gallery_root;
+        $error_messages[] = $not_exist_dir;
     }
 }
 else {
-    $dir = "./";
-    $is_dir_defined = 0;
+    $real_gallery_path = $gallery_root;
 }
 
-function create_gallery($gallery_dir = "tmpdir")
-{
-    //todo: fix
-    if (isset($_GET['hidden'])) {
-        $hidden = $_GET['hidden'];
-        $fullpath = "$hidden . $gallery_dir . /";
-        echo $fullpath;
-        mkdir($fullpath, 0770);
-    }
-
+if (isset($_POST['gallery_upload'])) {
+    $gallery_upload = $_POST['gallery_upload'];
+    $mod_gallery_upload = realpath("$gallery_root/$gallery_upload");
+    //todo: file name format: f.e. file24-Jan-2011_00:34.{jpg,png,gif, etc}
+    $filename = $_FILES['myfile']['name'];
+    copy($_FILES['myfile']['tmp_name'], "$mod_gallery_upload/$filename");
+    Header("Location: gallery.php?gallery=$gallery_upload");
+    exit;
 }
 
-function print_tree($path = "./*")
-{
-    foreach (glob($path) as $file) {
-        if (is_dir($file)) {
-            $basename = basename($file);
-            print "<p><a href='?dir=$file/' type='dir'>$basename</a></p>";
-        }
-    }
+$navigation = create_navigation($real_gallery_path);
+$images = create_images_list($real_gallery_path);
+
+$is_dir_empty = count($images) == 0;
+
+if ($is_dir_empty) {
+    $error_messages[] = $empty_dir;
 }
-
-function print_images($dir = "/images/*")
-{
-    $images = glob(realpath($dir) . "/*.{jpg,png,jpeg,gif}", GLOB_BRACE);
-    $count_images = count($images);
-    print "count_images = $count_images";
-    if ($count_images == 0) {
-        ;
-    }
-
-    for ($i = 0, $k = 0; $i < ceil($count_images / 4); ++$i) {
-        print "<tr>";
-        for ($j = 0; $j < 4; ++$j, ++$k) {
-            print "<td>";
-            if ($k < $count_images) {
-                $image = substr(rawurldecode($images[$k]), 14, strlen(rawurldecode($images[$k])) - 13);
-                print "<a href='$image'><img src='$image' height='200' width='200'></a>";
-            }
-            print "</td>";
-        }
-        print "</tr>";
-    }
-}
-
-function generate_error($error_code = 1)
-{
-    switch ($error_code) {
-        case'1' :
-            {
-            print "Запрашиваемой галереи не существует или отсутствует доступ к указанной галерее.";
-            break;
-            }
-        case '2' :
-            {
-            }
-        case '3':
-            {
-
-            }
-        case '4':
-            {
-
-            }
-        case '5':
-            {
-
-            }
-        default:
-            {
-            print "Неизвестный тип ошибки";
-            break;
-            }
-    }
-}
-
 ?>
+
 <html>
 <head>
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
@@ -129,32 +89,63 @@ function generate_error($error_code = 1)
 <div id="sidebar">
     <div class="text">
 <?php
+    if (!is_root_dir($gallery_root, $real_gallery_path)) {
+        $parent = unrealpath($gallery_root, dirname($real_gallery_path));
 
-    if (isset($dir) && $dir != "./") {
-        $parent = dirname($dir);
-        print "<a class='home' href='gallery.php?dir=$parent/'>Назад</a><br>";
-        print_tree($dir . "*");
-    } else {
-        print_tree("./*");
+        if (empty($parent)) {
+            print "<a class='home' href='gallery.php'>Выше</a><br>";
+        }
+        else {
+            print "<a class='home' href='gallery.php?gallery=$parent'>Выше</a><br>"; // todo: fix it
+        }
     }
-    ?>
+
+    for (reset($navigation); $name = key($navigation); next($navigation)) {
+        //$navigation = [key = basename(dir); value = realpath(dir);]
+        $gallery_path = unrealpath($gallery_root, $navigation[$name]);
+        print "<p><a href='gallery.php?gallery=$gallery_path'>$name</a></p>";
+    }
+?>
     </div>
 </div>
 <div id="content">
 <?php
-    if ($error > 0) {
-    ?>
-        <div id=error><?php generate_error($error); ?></div>
-    <?php
+    //print error array
+    foreach ($error_messages as $error_message) {
+        ?>
+        <div id='error'><?php print $error_message; ?></div><br><?php
 
     }
     ?>
     <table cellspacing="5">
-        <?php
-        if ($is_dir_defined == 0) {
-            print "<div id='welcome-message'>Добро пожаловать в галерею! Здесь можно просмотреть изображения, добавить свои галереи и делиться ими в соцсетях!</div>";
+<?php
+        if (is_root_dir($gallery_root, $real_gallery_path)) {
+    print "<div id='welcome-message'>Добро пожаловать в галерею!
+    Здесь можно просмотреть изображения, добавить свои галереи и делиться ими в соцсетях!</div>";
+}
+    for ($i = 0, $name = 0; $i < ceil(count($images) / $col_len); ++$i) {  // todo: fix it
+        print "<tr>";
+        for ($j = 0; $j < $col_len; ++$j, ++$name) {
+            print "<td>";
+            if ($name < count($images)) {
+                $image = substr(rawurldecode($images[$name]), 14, strlen(rawurldecode($images[$name])) - 13);    // todo: fix it
+                print "<a href='$image'><img src='$image' height='200' width='200'></a>";
+            }
+            print "</td>";
         }
-        print_images($dir); ?>
+        print "</tr>";
+    }
+
+    if ($is_dir_empty) {
+        print "<div class='text'>Желаете добавить изображения?</div>"; ?>
+        <form method='post' action='gallery.php' enctype='multipart/form-data'>
+            <input type='file' name='myfile'>
+            <input type="hidden" name="gallery_upload" value="<?php print unrealpath($gallery_root, $real_gallery_path); ?>">
+            <input type='submit' name='upload' value='Закачать'>
+        </form>  <?php
+
+    }
+    ?>
     </table>
 </div>
 <div id="footer">&copy; <a href="mailto:rainxforum@gmail.com">Ekaterina Khurtina</a></div>
