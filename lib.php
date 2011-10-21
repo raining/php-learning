@@ -3,7 +3,6 @@ function remove_last_slash_from_path($gallery_path)
 {
     $path_len = strlen($gallery_path);
     $modified_gallery_path = substr($gallery_path, $path_len - 1, $path_len);
-    $slash = "/";
     if (strnatcasecmp($modified_gallery_path, "/") == 0) {
         return substr($gallery_path, 0, strlen($gallery_path) - 1);
     }
