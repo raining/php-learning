@@ -11,6 +11,14 @@ function remove_last_slash_from_path($gallery_path)
     }
 }
 
+function add_slash($gallery_path) {
+    $first_simbol = substr($gallery_path, 0, 1); // first simbol
+    if (strnatcasecmp($first_simbol, "/") == 0) {
+        return $gallery_path;
+    }
+    else return "/".$gallery_path;
+}
+
 //returns str, reversed to realpath(str), f.e.
 //realpath("[/some/path/]to/dir") = /some/path/to/dir
 //unrealpath("[/some/path/", "/to/dir/") = to/dir

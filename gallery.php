@@ -53,6 +53,7 @@ $wrong_creating_dir = "Невозможно создать новую галер
                         - галерея с указанным именем уже существует.";
 $wrong_name = "Вы указали неверное имя.";
 $unknown_error = "Неизвестный тип ошибки.";
+$not_exist_file = "Запрашиваемого файла не существует.";
 
 if (isset($_GET['gallery'])) {
     $gallery_path = remove_last_slash_from_path($_GET['gallery']); // f.e. /my_gallery/family
@@ -105,6 +106,13 @@ if (isset($_GET['create'])) {
     }
 }
 
+if (isset($_GET['image'])) {
+    $image = $_GET['image'];
+    if (!filesize($image)) {
+        $error_messages[] = $not_exist_file;
+    }
+}
+
 $navigation = create_navigation($real_gallery_path);
 $images = create_images_list($real_gallery_path);
 
@@ -128,7 +136,7 @@ if ($is_dir_empty) {
     <div class="text">
 <?php
     if (!is_root_dir($gallery_root, $real_gallery_path)) {
-    $parent = unrealpath($gallery_root, dirname($real_gallery_path));
+    $parent = dirname(unrealpath($gallery_root, $real_gallery_path));
 
     if (empty($parent)) {
         print "<a class='home' href='gallery.php'>Выше</a><br>";
@@ -156,16 +164,18 @@ if ($is_dir_empty) {
         <?php if (!isset($_GET['gallery'])) { ?>
         <a href="gallery.php?create=1">Создать новую галерею</a><br>
         <?php
+
     }
     else {
         ?>
-        <a href="gallery.php?gallery=<?php print unrealpath($gallery_root, $real_gallery_path); ?>&create=1">Создать новую галерею</a><br>
+        <a href="gallery.php?gallery=<?php
+            print unrealpath($gallery_root, $real_gallery_path); ?>&create=1">Создать новую галерею</a><br>
         <?php }?>
     </div>
 </div>
 <div id="content">
 <?php
-    //print error array
+ //print error array
     foreach ($error_messages as $error_message) {
         ?>
         <div id='error'><?php print $error_message; ?></div><br><?php
@@ -174,37 +184,58 @@ if ($is_dir_empty) {
     ?>
     <table cellspacing="5">
 <?php
+
+    if (!isset($image)) {
+
         if (is_root_dir($gallery_root, $real_gallery_path)) {
-    print "<div id='welcome-message'>Добро пожаловать в галерею!
+            print "<div id='welcome-message'>Добро пожаловать в галерею!
     Здесь можно просмотреть изображения, добавить свои галереи и делиться ими в соцсетях!</div>";
-}
-    for ($i = 0, $name = 0; $i < ceil(count($images) / $col_len); ++$i) { // todo: fix it
-        print "<tr>";
-        for ($j = 0; $j < $col_len; ++$j, ++$name) {
-            print "<td>";
-            if ($name < count($images)) {
-                $image = substr(rawurldecode($images[$name]), 14, strlen(rawurldecode($images[$name])) - 13); // todo: fix it
-                print "<a href='$image'><img src='$image' height='200' width='200'></a>";
-            }
-            print "</td>";
         }
-        print "</tr>";
+        for ($i = 0, $name = 0; $i < ceil(count($images) / $col_len); ++$i) { // todo: fix it
+            print "<tr>";
+            for ($j = 0; $j < $col_len; ++$j, ++$name) {
+                print "<td>";
+                if ($name < count($images)) {
+                    $image = substr(rawurldecode($images[$name]), 14, strlen(rawurldecode($images[$name])) - 13); // todo: fix it
+                    print "<a href='gallery.php?image=$image'>
+                    <img src='$image' height='200' width='200'>
+                    </a>";
+                }
+                print "</td>";
+            }
+            print "</tr>";
+        }
+
+        print "<div class='text'>Желаете добавить изображения?</div>"; ?>
+        <form method='post' action='gallery.php' enctype='multipart/form-data'>
+            <input type='file' name='myfile'>
+            <input type="hidden" name="gallery_upload"
+                   value="<?php print unrealpath($gallery_root, $real_gallery_path); ?>">
+            <input type='submit' name='upload' value='Закачать'>
+        </form>
+
+        <p>
+
+        <p></p></p><br>
+
+        <?php
     }
+    else {
+        $parent = add_slash(dirname($image));
+        if (!empty($parent)) {
+            print "<a href='gallery.php?gallery=$parent'>Назад</a><br><br>";
+        }
+        else {
+            print "<a href='gallery.php'>Назад</a><br><br>";
+        }
+        print "<img src='$image'>";
+        ?>
+        <?php
 
-    print "<div class='text'>Желаете добавить изображения?</div>"; ?>
-    <form method='post' action='gallery.php' enctype='multipart/form-data'>
-        <input type='file' name='myfile'>
-        <input type="hidden" name="gallery_upload"
-               value="<?php print unrealpath($gallery_root, $real_gallery_path); ?>">
-        <input type='submit' name='upload' value='Закачать'>
-    </form>
-
-    <p>
-
-    <p></p></p><br>
-
+    }
+    ?>
 <?php
-    if (isset($create)) {
+            if (isset($create)) {
     ?>
     <form method="get" action="gallery.php">
         <div class="text">Имя новой галереи:</div>
